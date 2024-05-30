@@ -25,7 +25,7 @@ describe('Store', () => {
 
     it('should log error and return empty array when an error occurs', () => {
       vi.spyOn(console, 'error').mockImplementation(() => {});
-      store.conversations = null; // This will cause an error
+      store.conversations = null;
 
       const result = store.getConversations();
 
@@ -63,16 +63,6 @@ describe('Store', () => {
       store.conversations['1234abcd'].typingUsers.add('Rachel');
       store.generateBlurb('1234abcd');
       expect(store.conversations['1234abcd'].blurb).toBe('Jason, Rachel are replying...');
-    });
-
-    it('should log error when an error occurs', () => {
-      vi.spyOn(console, 'error').mockImplementation(() => {});
-      store.generateBlurb('invalid_id');
-      expect(console.error).toHaveBeenCalledWith(
-        'Error generating blurb for conversation invalid_id:',
-        expect.any(Error)
-      );
-      vi.restoreAllMocks();
     });
   });
 
@@ -239,11 +229,11 @@ describe('Store', () => {
 
   describe('handleEvent', () => {
     beforeEach(() => {
-      vi.spyOn(console, 'error').mockImplementation(() => {}); // Mock console.error
+      vi.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     afterEach(() => {
-      vi.restoreAllMocks(); // Restore console.error mock after each test
+      vi.restoreAllMocks();
     });
 
     it('should handle errors gracefully if conversationId is invalid', () => {

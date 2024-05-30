@@ -9,6 +9,20 @@ export class Store {
       TYPING_STARTED: 'typingStarted',
       TYPING_STOPPED: 'typingStopped',
     };
+    this.errorMessages = {
+      INVALID_CONVERSATION_ID: 'Invalid conversationId: conversationId cannot be null or undefined.',
+      INVALID_USER: 'Invalid user: user cannot be null or undefined in an assigned event.',
+      ERROR_GETTING_CONVERSATIONS: 'Error getting conversations:',
+      ERROR_GENERATING_BLURB: 'Error generating blurb for conversation ',
+      ERROR_HANDLING_NEW_CONVERSATION: 'Error handling new conversation:',
+      ERROR_HANDLING_MESSAGE_RECEIVED: 'Error handling message received:',
+      ERROR_HANDLING_ASSIGNED: 'Error handling assigned event:',
+      ERROR_HANDLING_UNASSIGNED: 'Error handling unassigned event:',
+      ERROR_HANDLING_TYPING_STARTED: 'Error handling typing started event:',
+      ERROR_HANDLING_TYPING_STOPPED: 'Error handling typing stopped event:',
+      ERROR_HANDLING_EVENT: 'Error handling event:',
+      UNEXPECTED_TYPE_WARNING: 'Unexpected event type:',
+    };
   }
 
   getConversations() {
@@ -30,7 +44,7 @@ export class Store {
       conversationsArray.sort((a, b) => b.lastUpdatedTimestamp - a.lastUpdatedTimestamp);
       return conversationsArray;
     } catch (error) {
-      console.error('Error getting conversations:', error);
+      console.error(this.errorMessages.ERROR_GETTING_CONVERSATIONS, error);
       return [];
     }
   }
@@ -48,10 +62,10 @@ export class Store {
       } else if (typingUsers.length > 1) {
         currentConversation.blurb = `${typingUsers.join(', ')} are replying...`;
       } else {
-        currentConversation.blurb = currentConversation.mostRecentMessage.slice(0, 256);
+        currentConversation.blurb = currentConversation.mostRecentMessage.slice(0, 256) || '';
       }
     } catch (error) {
-      console.error(`Error generating blurb for conversation ${conversationId}:`, error);
+      console.error(`${this.errorMessages.ERROR_GENERATING_BLURB} ${conversationId}:`, error);
     }
   }
 
@@ -78,7 +92,7 @@ export class Store {
         typingUsers: new Set(),
       };
     } catch (error) {
-      console.error('Error handling new conversation:', error);
+      console.error(this.errorMessages.ERROR_HANDLING_NEW_CONVERSATION, error);
     }
   }
 
@@ -94,7 +108,7 @@ export class Store {
       currentConversation.mostRecentMessage = body.slice(0, 256);
       if (!currentConversation.typingUsers.size) this.generateBlurb(conversationId, body);
     } catch (error) {
-      console.error('Error handling message received:', error);
+      console.error(this.errorMessages.ERROR_HANDLING_MESSAGE_RECEIVED, error);
     }
   }
 
@@ -102,11 +116,11 @@ export class Store {
     try {
       const { user } = data;
       if (!user) {
-        throw new Error('Invalid user: user cannot be null or undefined in an assigned event.');
+        throw new Error(this.errorMessages.INVALID_USER);
       }
       conversation.assignedUser = user;
     } catch (error) {
-      console.error('Error handling assigned event:', error);
+      console.error(this.errorMessages.ERROR_HANDLING_ASSIGNED, error);
     }
   }
 
@@ -114,7 +128,7 @@ export class Store {
     try {
       conversation.assignedUser = null;
     } catch (error) {
-      console.error('Error handling unassigned event:', error);
+      console.error(this.errorMessages.ERROR_HANDLING_UNASSIGNED, error);
     }
   }
 
@@ -122,14 +136,14 @@ export class Store {
     try {
       const { user, conversationId } = data;
       if (!user) {
-        throw new Error('Invalid user: user cannot be null or undefined.');
+        throw new Error(this.errorMessages.INVALID_USER);
       }
       conversation.typingUsers.add(user);
 
       // blurb should be updated when there are additional typing users
       this.generateBlurb(conversationId);
     } catch (error) {
-      console.error('Error handling typing started event:', error);
+      console.error(this.errorMessages.ERROR_HANDLING_TYPING_STARTED, error);
     }
   }
 
@@ -141,7 +155,7 @@ export class Store {
       // update blurb when a user has stopped typing
       this.generateBlurb(conversationId);
     } catch (error) {
-      console.error('Error handling typing stopped event:', error);
+      console.error(this.errorMessages.ERROR_HANDLING_TYPING_STOPPED, error);
     }
   }
 
@@ -152,7 +166,7 @@ export class Store {
 
       // Throw error if conversationId is null or undefined
       if (!conversationId) {
-        throw new Error('Invalid conversationId: conversationId cannot be null or undefined.');
+        throw new Error(this.errorMessages.INVALID_CONVERSATION_ID);
       }
 
       const eventIdentifier = this.getEventIdentifier(event);
@@ -188,7 +202,7 @@ export class Store {
           break;
         default:
           // handle unexpected event type
-          console.warn(`Unexpected event type: ${type}`);
+          console.warn(`${this.errorMessages.UNEXPECTED_TYPE_WARNING} ${type}`);
           break;
       }
 
@@ -201,7 +215,7 @@ export class Store {
         timestamp
       );
     } catch (error) {
-      console.error('Error handling event:', error);
+      console.error(this.errorMessages.ERROR_HANDLING_EVENT, error);
     }
   }
 }
